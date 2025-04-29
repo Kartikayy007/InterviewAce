@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		93D344F02DC146A40038EFEF /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 93D344EF2DC146A40038EFEF /* HotKey */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		93D344A42DC0CD730038EFEF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				93D344F02DC146A40038EFEF /* HotKey in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 				93D344942DC0CD720038EFEF /* InterviewAce */,
 				93D344A62DC0CD730038EFEF /* InterviewAceTests */,
 				93D344B02DC0CD730038EFEF /* InterviewAceUITests */,
+				93D344EE2DC146A40038EFEF /* Frameworks */,
 				93D344932DC0CD720038EFEF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +96,13 @@
 				93D344AD2DC0CD730038EFEF /* InterviewAceUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		93D344EE2DC146A40038EFEF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,6 +125,7 @@
 			);
 			name = InterviewAce;
 			packageProductDependencies = (
+				93D344EF2DC146A40038EFEF /* HotKey */,
 			);
 			productName = InterviewAce;
 			productReference = 93D344922DC0CD720038EFEF /* InterviewAce.app */;
@@ -195,6 +209,9 @@
 			);
 			mainGroup = 93D344892DC0CD720038EFEF;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				93D344ED2DC145B00038EFEF /* XCRemoteSwiftPackageReference "HotKey" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 93D344932DC0CD720038EFEF /* Products */;
 			projectDirPath = "";
@@ -541,6 +558,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		93D344ED2DC145B00038EFEF /* XCRemoteSwiftPackageReference "HotKey" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/soffes/HotKey";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		93D344EF2DC146A40038EFEF /* HotKey */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 93D344ED2DC145B00038EFEF /* XCRemoteSwiftPackageReference "HotKey" */;
+			productName = HotKey;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 93D3448A2DC0CD720038EFEF /* Project object */;
 }
