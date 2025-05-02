@@ -7,6 +7,7 @@ struct InterviewAceApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(appDelegate.minimizeViewModel)
         }
     }
 }
