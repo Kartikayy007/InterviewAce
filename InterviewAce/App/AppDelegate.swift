@@ -9,7 +9,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // Use strong references to ensure services aren't deallocated
     var windowManager: OverlayWindowManager?
     
-    var voiceViewModel: VoiceBarViewModel?
+    var voiceViewModel = VoiceBarViewModel()
     var minimizeViewModel = MinimizeViewModel()
     
     var screenshotService: ScreenshotService?
@@ -28,7 +28,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         AppDelegate.shared = self
         
         // Initialize services
-        voiceViewModel = VoiceBarViewModel()
         screenshotService = ScreenshotService()
 
         // The window might not be immediately available, so we add a slight delay
@@ -252,7 +251,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func configureWindow(_ window: NSWindow) {
-        window.sharingType = .none
+//        window.sharingType = .none
 
         // Set background color with transparency
         window.backgroundColor = NSColor.clear

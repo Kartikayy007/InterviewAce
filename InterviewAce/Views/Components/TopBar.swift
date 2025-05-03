@@ -13,48 +13,54 @@ struct TopBar: View {
     @EnvironmentObject var minimizeVM: MinimizeViewModel
 
     var body: some View {
-        HStack {
+        HStack(spacing: minimizeVM.isMinimized ? 8 : 12) { // Adjust spacing based on mode
             // Screenshot Button
             HStack(spacing: 8) {
-                Text("Take screenshot")
+                Text("Take Screenshot")
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false) // Prevent text wrapping
                 ShortcutKeyView(text: "⌘ ⇧ S")
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, minimizeVM.isMinimized ? 8 : 12) // Smaller padding when minimized
             .padding(.vertical, 6)
             .background(Color.white.opacity(0.1))
             .cornerRadius(10)
-
-            // Voice Status Button
-//            HStack(spacing: 8) {
-//                Text("Idle")
-//                ShortcutKeyView(text:   "⌘ V")
-//            }
-//            .padding(.horizontal, 12)
-//            .padding(.vertical, 6)
-//            .background(Color.white.opacity(0.1))
-//            .cornerRadius(10)
-            
 
             // Stop Button
             HStack(spacing: 8) {
                 Text("⏹ Stop")
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false) // Prevent text wrapping
                 ShortcutKeyView(text: "⌘ S")
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, minimizeVM.isMinimized ? 8 : 12)
             .padding(.vertical, 6)
             .background(Color.white.opacity(0.1))
             .cornerRadius(10)
             
+//            HStack(spacing: 8) {
+//                Text("↻ Restart")
+//                    .lineLimit(1)
+//                    .fixedSize(horizontal: true, vertical: false) // Prevent text wrapping
+//                ShortcutKeyView(text: "⌘ S")
+//            }
+//            .padding(.horizontal, minimizeVM.isMinimized ? 8 : 12)
+//            .padding(.vertical, 6)
+//            .background(Color.white.opacity(0.1))
+//            .cornerRadius(10)
+            
+            // Minimize Button
             HStack(spacing: 8) {
-                // Include the toggle icon next to the text
                 Image(systemName: minimizeVM.isMinimized ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
                     .font(.system(size: 12))
                 
-                Text("Minimize")
-                ShortcutKeyView(text: "⌘ ⇧ M")
+                Text(minimizeVM.isMinimized ? "Expand" : "Minimize")
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false) // Prevent text wrapping
                 
+                ShortcutKeyView(text: "⌘ ⇧ M")
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, minimizeVM.isMinimized ? 8 : 12)
             .padding(.vertical, 6)
             .background(Color.white.opacity(0.1))
             .cornerRadius(10)
@@ -67,18 +73,18 @@ struct TopBar: View {
                 showSettings.toggle()
             }) {
                 Image(systemName: "gear")
-                    .padding(6)
+                    .padding(minimizeVM.isMinimized ? 4 : 6)
                     .clipShape(Circle())
             }
             .popover(isPresented: $showSettings, arrowEdge: .top) {
                 SettingsTooltipView(isDarkMode: $isDarkMode)
             }
         }
-        .padding(.horizontal, minimizeVM.isMinimized ? 4 : 16)
+        .padding(.horizontal, minimizeVM.isMinimized ? 8 : 12)
         .padding(.vertical, 10)
-        .background(.ultraThinMaterial) // nice glassy look
+        .background(.ultraThinMaterial)
         .cornerRadius(16)
-        .padding(.horizontal, minimizeVM.isMinimized ? 0 : 40)
+        .padding(.horizontal, 0)
         .preferredColorScheme(isDarkMode ? .dark : .light)
     }
 }
@@ -123,4 +129,5 @@ struct ShortcutKeyView: View {
 
 #Preview {
     TopBar()
+        .environmentObject(MinimizeViewModel())
 }

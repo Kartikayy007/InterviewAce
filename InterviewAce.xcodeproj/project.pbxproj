@@ -33,22 +33,9 @@
 		93D344AD2DC0CD730038EFEF /* InterviewAceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = InterviewAceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		937E475C2DC4A80C00FC2C09 /* Exceptions for "InterviewAce" folder in "InterviewAce" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 93D344912DC0CD720038EFEF /* InterviewAce */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		93D344942DC0CD720038EFEF /* InterviewAce */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				937E475C2DC4A80C00FC2C09 /* Exceptions for "InterviewAce" folder in "InterviewAce" target */,
-			);
 			path = InterviewAce;
 			sourceTree = "<group>";
 		};

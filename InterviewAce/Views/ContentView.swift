@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @AppStorage("isDarkMode") private var isDarkMode = true
     @EnvironmentObject var minimizeVM: MinimizeViewModel
+    @EnvironmentObject var voiceViewModel: VoiceBarViewModel
 
     var body: some View {
         ZStack {
@@ -12,12 +13,12 @@ struct ContentView: View {
                     .opacity(1) // Always visible
                     .background(minimizeVM.isMinimized ? Color.black.opacity(0.3) : Color.clear) // Add background to TopBar when minimized
                     .cornerRadius(minimizeVM.isMinimized ? 16 : 0) // Make TopBar rounded when minimized
-                    .padding(.horizontal, minimizeVM.isMinimized ? 0 : 40) // Remove horizontal padding when minimized
+                    .padding(.horizontal, 0) // Consistent padding in both states
                 
                 if !minimizeVM.isMinimized {
                     HStack(spacing: 16) {
                         VStack(spacing: 16) {
-                            VoiceBar(viewModel: VoiceBarViewModel())
+                            VoiceBar(viewModel: voiceViewModel)
                             AIOutputView()
                         }
 
@@ -32,8 +33,8 @@ struct ContentView: View {
             .padding(minimizeVM.isMinimized ? 0 : 20) // Remove padding when minimized
         }
         .frame(
-            minWidth: minimizeVM.isMinimized ? 600 : 1000,
-            maxWidth: minimizeVM.isMinimized ? 600 : 1000,
+            minWidth: minimizeVM.isMinimized ? 600 : 1000,  // Increase minimized width to fit content
+            maxWidth: minimizeVM.isMinimized ? 600 : 1000,  // Increase minimized width to fit content
             minHeight: minimizeVM.isMinimized ? 80 : 700,
             maxHeight: minimizeVM.isMinimized ? 80 : 700
         )
@@ -50,4 +51,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environmentObject(MinimizeViewModel())
+        .environmentObject(VoiceBarViewModel())
 }

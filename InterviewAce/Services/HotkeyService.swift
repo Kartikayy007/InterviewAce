@@ -12,15 +12,15 @@ class HotkeyService {
     private var hotkeys: [HotKey] = []
 
     private var overlayManager: OverlayWindowManager
-    private var voiceViewModel: VoiceBarViewModel?
-    private var minimizeViewModel: MinimizeViewModel?
+    private var voiceViewModel: VoiceBarViewModel
+    private var minimizeViewModel: MinimizeViewModel
     
     private var screenshotService: ScreenshotService?
 
     init(overlayManager: OverlayWindowManager,
-         voiceViewModel: VoiceBarViewModel?,
+         voiceViewModel: VoiceBarViewModel,
          screenshotService: ScreenshotService?,
-         minimizeViewModel: MinimizeViewModel?) {
+         minimizeViewModel: MinimizeViewModel) {
 
         self.overlayManager = overlayManager
         self.voiceViewModel = voiceViewModel
@@ -133,7 +133,7 @@ class HotkeyService {
     private func setupVoiceShortcut() {
         let voiceHotkey = HotKey(key: .v, modifiers: [.command, .shift])
         voiceHotkey.keyDownHandler = { [weak self] in
-            self?.voiceViewModel?.toggleListening()
+            self?.voiceViewModel.toggleListening()
         }
         hotkeys.append(voiceHotkey)
         print("✅ Registered shortcut: ⌘⇧V - Toggle voice listening")
@@ -152,7 +152,7 @@ class HotkeyService {
     private func setupMinimizeShortcut() {
         let minimizeHotkey = HotKey(key: .m, modifiers: [.command, .shift])
         minimizeHotkey.keyDownHandler = { [weak self] in
-            self?.minimizeViewModel?.toggle()
+            self?.minimizeViewModel.toggle()
         }
         hotkeys.append(minimizeHotkey)
     }
