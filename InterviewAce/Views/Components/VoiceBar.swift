@@ -6,6 +6,7 @@ import AVFoundation
 /// Uses the glass box design while maintaining speech recognition functionality
 struct VoiceBar: View {
     @StateObject var viewModel: VoiceBarViewModel
+    @State private var animateWaveform = false
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
@@ -28,28 +29,21 @@ struct VoiceBar: View {
             
             // Content layout
             HStack(spacing: 15) {
-                
-                // Animated Transcript text
-                AnimatedTranscriptView(text: viewModel.transcript)
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                    .font(.system(size: 18, weight: .medium))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                // Voice button with shortcut key
                 HStack(spacing: 8) {
                     Image(systemName: viewModel.isListening ? "waveform.circle.fill" : "mic.circle.fill")
                         .foregroundColor(colorScheme == .dark ? .white : .black)
                         .font(.system(size: 24))
-                        
                     ShortcutKeyView(text: "⌘ ⇧ V")
                 }
                 .onTapGesture {
-                    if viewModel.isListening {
-                        viewModel.stopListening()
-                    } else {
-                        viewModel.startListening()
-                    }
+                    viewModel.isListening ? viewModel.stopListening() : viewModel.startListening()
                 }
+
+                Spacer()
+
+                AnimatedTranscriptView(text: viewModel.transcript)
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                    .font(.system(size: 18, weight: .medium))
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
@@ -61,46 +55,62 @@ struct VoiceBar: View {
 /// Custom view that animates text changes with a fade-in from right and fade-out to left effect
 struct AnimatedTranscriptView: View {
     let text: String
-    @State private var previousText: String = ""
-    @State private var currentText: String = ""
-    @State private var isAnimating: Bool = false
-    
+    @State private var previousWords: [String] = []
+    @State private var newWord: String = ""
+    @State private var showNewWord = false
+
+    let maxLength: Int = 40
+
     var body: some View {
-        ZStack(alignment: .leading) {
-            // Previous text that will fade out to the left
-            Text(previousText)
-                .opacity(isAnimating ? 0 : 1)
-                .offset(x: isAnimating ? -20 : 0)
-            
-            // New text that will fade in from the right
-            Text(currentText)
-                .opacity(isAnimating ? 1 : 0)
-                .offset(x: isAnimating ? 0 : 20)
+        HStack(spacing: 4) {
+            Text(previousWords.joined(separator: " "))
+                .lineLimit(1)
+                .truncationMode(.head)
+
+            if showNewWord {
+                Text(newWord)
+                    .transition(.opacity)
+                    .animation(.easeInOut(duration: 0.3), value: showNewWord)
+            }
         }
-        .onChange(of: text) { newValue in
-            // Don't animate if this is the first text being set
-            if currentText.isEmpty && previousText.isEmpty {
-                currentText = newValue
-                return
-            }
-            
-            // Start the animation process
-            withAnimation(.easeInOut(duration: 0.3)) {
-                previousText = currentText
-                isAnimating = true
-            }
-            
-            // Delay setting the new text and resetting the animation state
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                currentText = newValue
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    isAnimating = false
+        .font(.system(size: 18, weight: .medium))
+        .frame(maxHeight: .infinity)
+        .offset(y: 1)
+        .padding(.horizontal, 10)
+        .mask(
+            LinearGradient(
+                gradient: Gradient(stops: [
+                    .init(color: .clear, location: 0.01),
+                    .init(color: .black, location: 0.5), // Increased from 0.1
+                    .init(color: .black, location: 0.75), // Decreased from 0.9
+                    .init(color: .clear, location: 1.0),
+                ]),
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        )
+        .onChange(of: text) { _, newValue in
+            let allWords = newValue.components(separatedBy: " ")
+            guard let last = allWords.last else { return }
+
+            if allWords != previousWords + [newWord] {
+                withAnimation {
+                    showNewWord = false
+                }
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    let oldWords = Array(allWords.dropLast())
+                    previousWords = oldWords
+                    newWord = last
+                    showNewWord = true
                 }
             }
         }
         .onAppear {
-            // Initialize the current text on first appearance
-            currentText = text
+            let words = text.components(separatedBy: " ")
+            previousWords = Array(words.dropLast())
+            newWord = words.last ?? ""
+            showNewWord = true
         }
     }
 }

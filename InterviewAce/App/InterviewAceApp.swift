@@ -4,9 +4,10 @@ import SwiftUI
 struct InterviewAceApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
-    // Create a safe voice view model that handles the nil case
+    // This will only be needed if voiceViewModel is optional in AppDelegate
     private var safeVoiceViewModel: VoiceBarViewModel {
-        return appDelegate.voiceViewModel ?? VoiceBarViewModel()
+        // Only use the nil coalescing if voiceViewModel is optional
+        return appDelegate.voiceViewModel
     }
 
     var body: some Scene {
