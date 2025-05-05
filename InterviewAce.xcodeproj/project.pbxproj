@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		931293262DC7A83B00C6FD3B /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 931293252DC7A83B00C6FD3B /* FirebaseAnalytics */; };
+		931293282DC7A83B00C6FD3B /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 931293272DC7A83B00C6FD3B /* FirebaseCore */; };
+		9312932A2DC7A83B00C6FD3B /* FirebaseVertexAI in Frameworks */ = {isa = PBXBuildFile; productRef = 931293292DC7A83B00C6FD3B /* FirebaseVertexAI */; };
 		93D344F02DC146A40038EFEF /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 93D344EF2DC146A40038EFEF /* HotKey */; };
 /* End PBXBuildFile section */
 
@@ -56,6 +59,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				931293262DC7A83B00C6FD3B /* FirebaseAnalytics in Frameworks */,
+				9312932A2DC7A83B00C6FD3B /* FirebaseVertexAI in Frameworks */,
+				931293282DC7A83B00C6FD3B /* FirebaseCore in Frameworks */,
 				93D344F02DC146A40038EFEF /* HotKey in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -118,6 +124,9 @@
 			name = InterviewAce;
 			packageProductDependencies = (
 				93D344EF2DC146A40038EFEF /* HotKey */,
+				931293252DC7A83B00C6FD3B /* FirebaseAnalytics */,
+				931293272DC7A83B00C6FD3B /* FirebaseCore */,
+				931293292DC7A83B00C6FD3B /* FirebaseVertexAI */,
 			);
 			productName = InterviewAce;
 			productReference = 93D344922DC0CD720038EFEF /* InterviewAce.app */;
@@ -203,6 +212,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				93D344ED2DC145B00038EFEF /* XCRemoteSwiftPackageReference "HotKey" */,
+				931293242DC7A63200C6FD3B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 93D344932DC0CD720038EFEF /* Products */;
@@ -558,6 +568,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		931293242DC7A63200C6FD3B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.12.0;
+			};
+		};
 		93D344ED2DC145B00038EFEF /* XCRemoteSwiftPackageReference "HotKey" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/soffes/HotKey";
@@ -569,6 +587,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		931293252DC7A83B00C6FD3B /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 931293242DC7A63200C6FD3B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		931293272DC7A83B00C6FD3B /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 931293242DC7A63200C6FD3B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		931293292DC7A83B00C6FD3B /* FirebaseVertexAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 931293242DC7A63200C6FD3B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseVertexAI;
+		};
 		93D344EF2DC146A40038EFEF /* HotKey */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 93D344ED2DC145B00038EFEF /* XCRemoteSwiftPackageReference "HotKey" */;

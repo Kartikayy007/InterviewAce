@@ -6,5 +6,9 @@
 	<string>InterviewAce needs to capture the screen for the screenshot feature.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>InterviewAce needs microphone access to transcribe speech and system audio.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Speech recognition is used to provide live captions for audio.</string>
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>Please allow access to capture system audio for transcription.</string>
 </dict>
 </plist>

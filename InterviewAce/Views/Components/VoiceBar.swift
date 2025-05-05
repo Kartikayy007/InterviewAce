@@ -1,13 +1,14 @@
 import SwiftUI
-import Speech
-import AVFoundation
 
 /// Voice input bar component shown in the left column
-/// Uses the glass box design while maintaining speech recognition functionality
+/// Uses the glass box design while maintaining visual appearance
 struct VoiceBar: View {
     @StateObject var viewModel: VoiceBarViewModel
-    @State private var animateWaveform = false
+    @State private var showTextInput = false
+    @State private var textInput = ""
     @Environment(\.colorScheme) private var colorScheme
+    @State private var isHoveringMic = false
+    @State private var isHoveringKeyboard = false
     
     var body: some View {
         ZStack {
@@ -27,28 +28,155 @@ struct VoiceBar: View {
                     radius: 10, x: 0, y: 5
                 )
             
-            // Content layout
-            HStack(spacing: 15) {
-                HStack(spacing: 8) {
-                    Image(systemName: viewModel.isListening ? "waveform.circle.fill" : "mic.circle.fill")
+            // Content layout with smooth transitions between modes
+            ZStack {
+                // Voice input mode
+                HStack(spacing: 15) {
+                    HStack(spacing: 8) {
+                        // Toggle button with animation - no background
+                        Button(action: {
+                            viewModel.toggleListening()
+                        }) {
+                            ZStack {
+                                if !viewModel.isListening {
+                                    Image(systemName: "mic.fill")
+                                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                                        .font(.system(size: 18))
+                                        .transition(
+                                            .asymmetric(
+                                                insertion: .modifier(active: RecordingIconTransitionModifier(isIdentity: false), identity: RecordingIconTransitionModifier(isIdentity: true)).animation(.bouncy(extraBounce: 0.3).delay(0.2)),
+                                                removal: .modifier(active: RecordingIconTransitionModifier(isIdentity: false), identity: RecordingIconTransitionModifier(isIdentity: true)).animation(.bouncy(extraBounce: 0.3))
+                                            )
+                                        )
+                                }
+
+                                if viewModel.isListening {
+                                    recordingWaveformView
+                                        .transition(
+                                            .asymmetric(
+                                                insertion: .scale.combined(with: .opacity).animation(.bouncy(extraBounce: 0.3).delay(0.2)),
+                                                removal: .scale.combined(with: .opacity).animation(.bouncy)
+                                            )
+                                        )
+                                }
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .help(viewModel.isListening ? "Stop listening" : "Start listening")
+                        
+                        ShortcutKeyView(text: "⌘ ⇧ V")
+                    }
+
+                    Spacer()
+
+                    // Display transcript text (just visual)
+                    AnimatedTranscriptView(text: viewModel.transcript)
                         .foregroundColor(colorScheme == .dark ? .white : .black)
-                        .font(.system(size: 24))
-                    ShortcutKeyView(text: "⌘ ⇧ V")
+                        .font(.system(size: 18, weight: .medium))
+                    
+                    // Text/voice toggle with hover effect
+                    Image(systemName: "keyboard")
+                        .font(.system(size: 18))
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                        .opacity(isHoveringKeyboard ? 1.0 : 0.7)
+                        .scaleEffect(isHoveringKeyboard ? 1.1 : 1.0)
+                        .onHover { hovering in
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                isHoveringKeyboard = hovering
+                            }
+                        }
+                        .onTapGesture {
+                            withAnimation(.easeInOut) {
+                                viewModel.stopListening()
+                                showTextInput = true
+                            }
+                        }
+                        .help("Switch to keyboard input")
                 }
-                .onTapGesture {
-                    viewModel.isListening ? viewModel.stopListening() : viewModel.startListening()
+                .opacity(showTextInput ? 0 : 1)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                
+                // Text input mode
+                HStack(spacing: 8) {
+                    TextField("Type your question...", text: $textInput)
+                        .textFieldStyle(PlainTextFieldStyle())
+                        .padding(10)
+                        .background(Color.white.opacity(0.05))
+                        .cornerRadius(12)
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                        .submitLabel(.send)
+                        .onSubmit {
+                            submitTextInput()
+                        }
+                    
+                    Button(action: submitTextInput) {
+                        Image(systemName: "arrow.up")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(colorScheme == .dark ? .white : .black)
+                            .padding(8)
+                    }
+                    .disabled(textInput.isEmpty)
+                    .buttonStyle(PlainButtonStyle())
+                    .opacity(textInput.isEmpty ? 0.5 : 1.0)
+                    
+                    Image(systemName: "mic")
+                        .font(.system(size: 18))
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                        .opacity(isHoveringMic ? 1.0 : 0.7)
+                        .scaleEffect(isHoveringMic ? 1.1 : 1.0)
+                        .onHover { hovering in
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                isHoveringMic = hovering
+                            }
+                        }
+                        .onTapGesture {
+                            withAnimation(.easeInOut) {
+                                textInput = ""
+                                showTextInput = false
+                            }
+                        }
                 }
-
-                Spacer()
-
-                AnimatedTranscriptView(text: viewModel.transcript)
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                    .font(.system(size: 18, weight: .medium))
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .opacity(showTextInput ? 1 : 0)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
+            .animation(.easeInOut(duration: 0.3), value: showTextInput)
         }
         .frame(height: 80)
+    }
+    
+    @ViewBuilder
+    private var recordingWaveformView: some View {
+        Image(systemName: "waveform")
+            .foregroundColor(colorScheme == .dark ? .white : .black)
+            .font(.system(size: 22))
+            .compositingGroup()
+            .overlay {
+                ZStack {
+                    Circle()
+                        .fill(colorScheme == .dark ? .white : .black)
+                        .frame(width: 6, height: 6)
+                        .opacity(0.5)
+                        .offset(y: 8)
+                }
+                .phaseAnimator([0, 1]) { content, phase in
+                    content
+                        .scaleEffect(phase == 1 ? 1.5 : 1)
+                        .opacity(phase == 1 ? 1 : 0.7)
+                } animation: { _ in Animation.bouncy(duration: 2.4).delay(0.6) }
+            }
+    }
+    
+    private func submitTextInput() {
+        guard !textInput.isEmpty else { return }
+        
+        // Set the transcript to the text input
+        viewModel.setManualTranscript(textInput)
+        
+        // Clear the text input and switch back to voice mode
+        textInput = ""
+        showTextInput = false
     }
 }
 
@@ -81,8 +209,8 @@ struct AnimatedTranscriptView: View {
             LinearGradient(
                 gradient: Gradient(stops: [
                     .init(color: .clear, location: 0.01),
-                    .init(color: .black, location: 0.5), // Increased from 0.1
-                    .init(color: .black, location: 0.75), // Decreased from 0.9
+                    .init(color: .black, location: 0.5),
+                    .init(color: .black, location: 0.75),
                     .init(color: .clear, location: 1.0),
                 ]),
                 startPoint: .leading,
@@ -115,176 +243,9 @@ struct AnimatedTranscriptView: View {
     }
 }
 
-// Speech recognizer class for macOS - without AVAudioSession
-class SpeechRecognizer: NSObject, ObservableObject, SFSpeechRecognizerDelegate {
-    private let speechRecognizer: SFSpeechRecognizer
-    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
-    private var recognitionTask: SFSpeechRecognitionTask?
-    private let audioEngine = AVAudioEngine()
-    
-    var onTranscription: ((Result<String, Error>) -> Void)?
-    
-    override init() {
-        guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US")) else {
-            fatalError("Speech recognizer locale not supported")
-        }
-        self.speechRecognizer = recognizer
-        super.init()
-        speechRecognizer.delegate = self
-    }
-    
-    func requestAuthorization() {
-        SFSpeechRecognizer.requestAuthorization { (authStatus: SFSpeechRecognizerAuthorizationStatus) in
-            DispatchQueue.main.async {
-                switch authStatus {
-                case .authorized:
-                    print("Speech recognition authorized")
-                case .denied:
-                    print("Speech recognition authorization denied")
-                case .restricted:
-                    print("Speech recognition restricted on this device")
-                case .notDetermined:
-                    print("Speech recognition not yet authorized")
-                @unknown default:
-                    print("Unknown authorization status")
-                }
-            }
-        }
-    }
-    
-    func startRecording(completion: @escaping (Result<String, Error>) -> Void) {
-        print("SpeechRecognizer: Starting recording...")
-        
-        // Cancel any existing recognition tasks
-        if recognitionTask != nil {
-            recognitionTask?.cancel()
-            recognitionTask = nil
-        }
-        
-        // Check if SFSpeechRecognizer is available
-        if !speechRecognizer.isAvailable {
-            print("SpeechRecognizer: Speech recognizer is not available!")
-            completion(.failure(NSError(domain: "SpeechRecognizerError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Speech recognizer is not available"])))
-            return
-        }
-        
-        // Create and configure the speech recognition request
-        recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
-        
-        guard let recognitionRequest = recognitionRequest else {
-            print("SpeechRecognizer: Unable to create recognition request")
-            completion(.failure(NSError(domain: "SpeechRecognizerError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unable to create recognition request"])))
-            return
-        }
-        
-        recognitionRequest.shouldReportPartialResults = true
-        
-        // Start recognition
-        recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { (result: SFSpeechRecognitionResult?, error: Error?) in
-            var isFinal = false
-            
-            if let result = result {
-                // Pass the recognized text to our completion handler
-                print("SpeechRecognizer: Got result: \(result.bestTranscription.formattedString)")
-                completion(.success(result.bestTranscription.formattedString))
-                isFinal = result.isFinal
-            }
-            
-            if let error = error {
-                print("SpeechRecognizer: Error in recognition: \(error.localizedDescription)")
-                completion(.failure(error))
-            }
-            
-            if error != nil || isFinal {
-                // Stop audio if there's an error or we've finished
-                print("SpeechRecognizer: Stopping audio engine (error or final)")
-                self.audioEngine.stop()
-                self.audioEngine.inputNode.removeTap(onBus: 0)
-                
-                self.recognitionRequest = nil
-                self.recognitionTask = nil
-            }
-        }
-        
-        // Configure the microphone input
-        // For macOS, we generally don't need to use AVAudioSession since it's primarily for iOS
-        // Instead, we just set up the audioEngine directly
-        
-        let recordingFormat = audioEngine.inputNode.outputFormat(forBus: 0)
-        print("SpeechRecognizer: Recording format: \(recordingFormat)")
-        
-        print("SpeechRecognizer: Installing tap on input node")
-        audioEngine.inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer: AVAudioPCMBuffer, _: AVAudioTime) in
-            self.recognitionRequest?.append(buffer)
-        }
-        
-        // Start the audio engine
-        audioEngine.prepare()
-        
-        do {
-            try audioEngine.start()
-            print("SpeechRecognizer: Audio engine started successfully")
-            completion(.success(""))
-        } catch {
-            print("SpeechRecognizer: Audio engine start error: \(error.localizedDescription)")
-            completion(.failure(error))
-        }
-    }
-    
-    func stopRecording() {
-        audioEngine.stop()
-        audioEngine.inputNode.removeTap(onBus: 0)
-        recognitionRequest?.endAudio()
-    }
-    
-    func processAudioBuffer(_ buffer: AVAudioPCMBuffer) {
-        // Create recognition request if needed
-        if recognitionRequest == nil {
-            recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
-            
-            guard let recognitionRequest = recognitionRequest else { return }
-            recognitionRequest.shouldReportPartialResults = true
-            
-            recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { [weak self] (result: SFSpeechRecognitionResult?, error: Error?) in
-                guard let self = self else { return }
-                
-                var isFinal = false
-                
-                if let result = result {
-                    // Pass transcription back through the callback
-                    self.onTranscription?(.success(result.bestTranscription.formattedString))
-                    isFinal = result.isFinal
-                }
-                
-                if error != nil || isFinal {
-                    // Clean up on error or completion
-                    self.audioEngine.stop()
-                    self.audioEngine.inputNode.removeTap(onBus: 0)
-                    
-                    self.recognitionRequest = nil
-                    self.recognitionTask = nil
-                    
-                    if let error = error {
-                        self.onTranscription?(.failure(error))
-                    }
-                }
-            }
-        }
-        
-        // Append the buffer to the recognition request
-        recognitionRequest?.append(buffer)
-    }
-    
-    // SFSpeechRecognizerDelegate method
-    func speechRecognizer(_ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool) {
-        if available {
-            print("Speech recognition available")
-        } else {
-            print("Speech recognition unavailable")
-        }
-    }
-}
-
 #Preview {
     VoiceBar(viewModel: VoiceBarViewModel())
+        .environmentObject(MinimizeViewModel())
+        .environmentObject(VoiceBarViewModel())
+        .environmentObject(AIViewModel())
 }

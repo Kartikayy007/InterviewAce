@@ -4,6 +4,7 @@ struct ContentView: View {
     @AppStorage("isDarkMode") private var isDarkMode = true
     @EnvironmentObject var minimizeVM: MinimizeViewModel
     @EnvironmentObject var voiceViewModel: VoiceBarViewModel
+    @EnvironmentObject var aiViewModel: AIViewModel
 
     var body: some View {
         ZStack {
@@ -20,6 +21,7 @@ struct ContentView: View {
                         VStack(spacing: 16) {
                             VoiceBar(viewModel: voiceViewModel)
                             AIOutputView()
+                                .environmentObject(aiViewModel)
                         }
 
                         VStack(spacing: 16) {
@@ -52,4 +54,5 @@ struct ContentView: View {
     ContentView()
         .environmentObject(MinimizeViewModel())
         .environmentObject(VoiceBarViewModel())
+        .environmentObject(AIViewModel())
 }

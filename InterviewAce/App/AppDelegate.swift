@@ -1,5 +1,7 @@
 import Cocoa
 import HotKey
+import FirebaseCore
+
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -11,6 +13,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     var voiceViewModel = VoiceBarViewModel()
     var minimizeViewModel = MinimizeViewModel()
+    var aiViewModel = AIViewModel()
     
     var screenshotService: ScreenshotService?
     var hotkeyService: HotkeyService?
@@ -26,6 +29,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Set the shared instance
         AppDelegate.shared = self
+        
+        // Initialize Firebase first
+        FirebaseApp.configure()
         
         // Initialize services
         screenshotService = ScreenshotService()
@@ -70,10 +76,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                               name: .minimizeStateChanged,
                                               object: nil)
 
+        // Setup voice transcript processing for AI
+        setupVoiceTranscriptObserver()
+        
         // Check screen recording permission proactively
         Task {
             await checkScreenRecordingPermission()
         }
+    }
+    
+    private func setupVoiceTranscriptObserver() {
+        // Use Combine to observe transcript changes from the VoiceViewModel
+        voiceViewModel.objectWillChange
+            .debounce(for: .seconds(2), scheduler: RunLoop.main) // Delay to accumulate speech
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                DispatchQueue.main.async {
+                    self.aiViewModel.processTranscript(from: self.voiceViewModel)
+                }
+            }
+            .store(in: &voiceViewModel.cancellables)
     }
 
     // Proactively check screen recording permission
@@ -251,7 +273,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func configureWindow(_ window: NSWindow) {
-//        window.sharingType = .none
+        window.sharingType = .none
 
         // Set background color with transparency
         window.backgroundColor = NSColor.clear

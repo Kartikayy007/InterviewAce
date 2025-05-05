@@ -7,94 +7,115 @@
 
 import Foundation
 import AVFoundation
+import Combine
+import Speech
 
 class VoiceBarViewModel: ObservableObject {
     @Published var transcript: String = "Ready to transcribe"
     @Published var isListening = false
-    @Published var isSystemAudioMode = false
+    @Published var audioPermissionStatus: SFSpeechRecognizerAuthorizationStatus = .notDetermined
     
-    private let speechRecognizer = SpeechRecognizer()
-    private let systemAudioCapture = SystemAudioCapture()
+    // Services for audio capture and transcription
+    private var systemAudioCapture = SystemAudioCapture()
+    private var speechRecognizer = SpeechRecognizer()
+    
+    var cancellables = Set<AnyCancellable>() // For Combine subscriptions
 
     init() {
-        speechRecognizer.requestAuthorization()
+        checkPermissions()
+        setupTranscriptionUpdates()
     }
     
-    func setAudioSource(isSystemAudio: Bool) {
-        self.isSystemAudioMode = isSystemAudio
-        if isSystemAudio {
-            transcript = "Ready for system audio"
-        } else {
-            transcript = "Ready for microphone"
+    private func setupTranscriptionUpdates() {
+        // Connect the speech recognizer's transcribed text to our transcript
+        speechRecognizer.$transcribedText
+            .receive(on: RunLoop.main)
+            .sink { [weak self] newText in
+                guard let self = self, !newText.isEmpty else { return }
+                self.transcript = newText
+            }
+            .store(in: &cancellables)
+        
+        // Handle errors from speech recognizer
+        speechRecognizer.$errorMessage
+            .receive(on: RunLoop.main)
+            .sink { [weak self] errorMessage in
+                guard let self = self, let errorMessage = errorMessage else { return }
+                print("Speech recognition error: \(errorMessage)")
+                // Optionally stop listening on errors
+                if self.isListening {
+                    self.stopListening()
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func checkPermissions() {
+        // Request speech recognition authorization
+        SFSpeechRecognizer.requestAuthorization { [weak self] status in
+            DispatchQueue.main.async {
+                self?.audioPermissionStatus = status
+                
+                if status != .authorized {
+                    print("Speech recognition permission not authorized: \(status.rawValue)")
+                }
+            }
         }
+    }
+
+    func setManualTranscript(_ text: String) {
+        transcript = text
+        objectWillChange.send()
     }
 
     func startListening() {
-        print("Starting to listen...")
-        transcript = "Listening..."
-        isListening = true
+        guard !isListening else { return }
         
-        if isSystemAudioMode {
-            // Start capturing system audio
-            systemAudioCapture.startCapture { [weak self] buffer in
-                // Send the audio buffer to speech recognizer
-                self?.speechRecognizer.processAudioBuffer(buffer)
-                print("Processing audio buffer...")
+        print("VoiceBarViewModel: Starting to listen to system audio")
+        transcript = "Listening..."
+        
+        // Start capturing system audio
+        systemAudioCapture.startCapture { [weak self] buffer in
+            // When a buffer is received, send it to the speech recognizer
+            guard let self = self else { return }
+            
+            // If speech recognizer isn't transcribing yet, start it
+            if !self.speechRecognizer.isTranscribing {
+                self.speechRecognizer.startTranscribing(format: buffer.format)
             }
             
-            // Handle transcription updates
-            speechRecognizer.onTranscription = { [weak self] result in
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success(let text):
-                        print("Transcription update: \(text)")
-                        self?.transcript = text.isEmpty ? "Listening..." : text
-                    case .failure(let error):
-                        print("Transcription error: \(error.localizedDescription)")
-                        self?.transcript = "Error: \(error.localizedDescription)"
-                        self?.stopListening()
-                    }
-                }
-            }
-        } else {
-            // Use the existing microphone-based recognition
-            speechRecognizer.startRecording { [weak self] result in
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success(let text):
-                        print("Microphone transcription: \(text)")
-                        self?.transcript = text.isEmpty ? "Listening..." : text
-                    case .failure(let error):
-                        print("Microphone error: \(error.localizedDescription)")
-                        self?.transcript = "Error: \(error.localizedDescription)"
-                        self?.stopListening()
-                    }
-                }
-            }
+            // Process the audio buffer for transcription
+            self.speechRecognizer.processAudioBuffer(buffer)
         }
+        
+        isListening = true
     }
 
     func stopListening() {
-        if isSystemAudioMode {
-            systemAudioCapture.stopCapture()
-        } else {
-            speechRecognizer.stopRecording()
-        }
+        guard isListening else { return }
+        
+        print("VoiceBarViewModel: Stopping system audio listening")
+        
+        // Stop system audio capture
+        systemAudioCapture.stopCapture()
+        
+        // Stop speech recognition
+        speechRecognizer.stopTranscribing()
+        
         isListening = false
-
+        
+        // Reset the transcript after a delay if it's still just "Listening..."
         if transcript == "Listening..." {
             transcript = "Ready to transcribe"
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
-            guard let self = self else { return }
-            if !(self.isListening) {
-                self.transcript = "Ready to transcribe"
-            }
         }
     }
 
     func toggleListening() {
         isListening ? stopListening() : startListening()
+    }
+    
+    deinit {
+        stopListening()
+        cancellables.removeAll()
     }
 }

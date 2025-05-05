@@ -1,5 +1,7 @@
-import SwiftUI
+import FirebaseCore
+import FirebaseVertexAI
 
+import SwiftUI
 @main
 struct InterviewAceApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
@@ -15,6 +17,7 @@ struct InterviewAceApp: App {
             ContentView()
                 .environmentObject(appDelegate.minimizeViewModel)
                 .environmentObject(safeVoiceViewModel)
+                .environmentObject(appDelegate.aiViewModel)
         }
     }
 }
