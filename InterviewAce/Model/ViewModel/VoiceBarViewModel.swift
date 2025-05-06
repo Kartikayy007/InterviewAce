@@ -104,9 +104,8 @@ class VoiceBarViewModel: ObservableObject {
         
         isListening = false
         
-        // Reset the transcript after a delay if it's still just "Listening..."
         if transcript == "Listening..." {
-            transcript = "Ready to transcribe"
+            transcript = "Ready to Crack it up"
         }
     }
 

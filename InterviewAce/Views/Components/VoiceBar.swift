@@ -9,7 +9,7 @@ struct VoiceBar: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var isHoveringMic = false
     @State private var isHoveringKeyboard = false
-    
+
     var body: some View {
         ZStack {
             // Creates the glass-like appearance (same as GlassBox)
@@ -20,14 +20,15 @@ struct VoiceBar: View {
                 )
                 .background(
                     RoundedRectangle(cornerRadius: 24)
-                        .fill(.ultraThinMaterial.opacity(0.1))
+                        .fill(Color.clear)
+                        .background(.ultraThinMaterial)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 24))
                 .shadow(
                     color: colorScheme == .dark ? Color.white.opacity(0.1) : Color.black.opacity(0.1),
                     radius: 10, x: 0, y: 5
                 )
-            
+
             // Content layout with smooth transitions between modes
             ZStack {
                 // Voice input mode
@@ -63,7 +64,7 @@ struct VoiceBar: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         .help(viewModel.isListening ? "Stop listening" : "Start listening")
-                        
+
                         ShortcutKeyView(text: "⌘ ⇧ V")
                     }
 
@@ -73,7 +74,7 @@ struct VoiceBar: View {
                     AnimatedTranscriptView(text: viewModel.transcript)
                         .foregroundColor(colorScheme == .dark ? .white : .black)
                         .font(.system(size: 18, weight: .medium))
-                    
+
                     // Text/voice toggle with hover effect
                     Image(systemName: "keyboard")
                         .font(.system(size: 18))
@@ -96,7 +97,7 @@ struct VoiceBar: View {
                 .opacity(showTextInput ? 0 : 1)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
-                
+
                 // Text input mode
                 HStack(spacing: 8) {
                     TextField("Type your question...", text: $textInput)
@@ -109,7 +110,7 @@ struct VoiceBar: View {
                         .onSubmit {
                             submitTextInput()
                         }
-                    
+
                     Button(action: submitTextInput) {
                         Image(systemName: "arrow.up")
                             .font(.system(size: 16, weight: .medium))
@@ -119,7 +120,7 @@ struct VoiceBar: View {
                     .disabled(textInput.isEmpty)
                     .buttonStyle(PlainButtonStyle())
                     .opacity(textInput.isEmpty ? 0.5 : 1.0)
-                    
+
                     Image(systemName: "mic")
                         .font(.system(size: 18))
                         .foregroundColor(colorScheme == .dark ? .white : .black)
@@ -145,7 +146,7 @@ struct VoiceBar: View {
         }
         .frame(height: 80)
     }
-    
+
     @ViewBuilder
     private var recordingWaveformView: some View {
         Image(systemName: "waveform")
@@ -167,13 +168,13 @@ struct VoiceBar: View {
                 } animation: { _ in Animation.bouncy(duration: 2.4).delay(0.6) }
             }
     }
-    
+
     private func submitTextInput() {
         guard !textInput.isEmpty else { return }
-        
+
         // Set the transcript to the text input
         viewModel.setManualTranscript(textInput)
-        
+
         // Clear the text input and switch back to voice mode
         textInput = ""
         showTextInput = false

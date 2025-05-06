@@ -109,7 +109,6 @@ struct SettingsTooltipView: View {
         }
         .padding()
         .frame(width: 200)
-        .background(Color.gray.opacity(0.5))
         .cornerRadius(12)
     }
 }

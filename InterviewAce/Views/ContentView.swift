@@ -15,7 +15,7 @@ struct ContentView: View {
                     .background(minimizeVM.isMinimized ? Color.black.opacity(0.3) : Color.clear) // Add background to TopBar when minimized
                     .cornerRadius(minimizeVM.isMinimized ? 16 : 0) // Make TopBar rounded when minimized
                     .padding(.horizontal, 0) // Consistent padding in both states
-                
+
                 if !minimizeVM.isMinimized {
                     HStack(spacing: 16) {
                         VStack(spacing: 16) {
@@ -25,7 +25,28 @@ struct ContentView: View {
                         }
 
                         VStack(spacing: 16) {
+                            // Ensure the same instance of AIViewModel is passed to both views
+                            let sharedViewModel = aiViewModel
+
+                            // Create a unique ID based on the selected card to force view recreation
+                            let selectedCard = sharedViewModel.selectedCodeCard
+                            let codeCardId = selectedCard?.id ?? "none"
+                            let codeLength = selectedCard?.code.count ?? 0
+
+                            // Log debug info outside the view hierarchy
+//                            DispatchQueue.main.async {
+//                                print("ContentView: Rendering OutputCodeView with card ID: \(codeCardId), code length: \(codeLength)")
+//                            }
+
+                            // Force view recreation when selected card changes
+                            // Use a unique ID that includes both the card ID and code length
+                            // This ensures the view is recreated when either changes
+                            let viewId = "output-code-view-\(codeCardId)-\(codeLength)"
+
                             OutputCodeView()
+                                .environmentObject(sharedViewModel)
+                                .id(viewId)
+
                             TertiaryBox()
                         }
                     }
