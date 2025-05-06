@@ -27,7 +27,7 @@ struct AIOutputView: View {
 
                     Spacer()
 
-                    // Show loading indicator when processing
+                        // Show loading indicator when processing
                     if case .processing = aiViewModel.state {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
