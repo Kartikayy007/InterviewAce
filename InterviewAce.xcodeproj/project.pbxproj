@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		931293262DC7A83B00C6FD3B /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 931293252DC7A83B00C6FD3B /* FirebaseAnalytics */; };
 		931293282DC7A83B00C6FD3B /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 931293272DC7A83B00C6FD3B /* FirebaseCore */; };
 		9312932A2DC7A83B00C6FD3B /* FirebaseVertexAI in Frameworks */ = {isa = PBXBuildFile; productRef = 931293292DC7A83B00C6FD3B /* FirebaseVertexAI */; };
 		9356C74C2DCA9A5800E57201 /* Highlighter in Frameworks */ = {isa = PBXBuildFile; productRef = 9356C74B2DCA9A5800E57201 /* Highlighter */; };
@@ -60,7 +59,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				931293262DC7A83B00C6FD3B /* FirebaseAnalytics in Frameworks */,
 				9312932A2DC7A83B00C6FD3B /* FirebaseVertexAI in Frameworks */,
 				9356C74C2DCA9A5800E57201 /* Highlighter in Frameworks */,
 				931293282DC7A83B00C6FD3B /* FirebaseCore in Frameworks */,
@@ -126,7 +124,6 @@
 			name = InterviewAce;
 			packageProductDependencies = (
 				93D344EF2DC146A40038EFEF /* HotKey */,
-				931293252DC7A83B00C6FD3B /* FirebaseAnalytics */,
 				931293272DC7A83B00C6FD3B /* FirebaseCore */,
 				931293292DC7A83B00C6FD3B /* FirebaseVertexAI */,
 				9356C74B2DCA9A5800E57201 /* Highlighter */,
@@ -599,11 +596,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		931293252DC7A83B00C6FD3B /* FirebaseAnalytics */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 931293242DC7A63200C6FD3B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAnalytics;
-		};
 		931293272DC7A83B00C6FD3B /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 931293242DC7A63200C6FD3B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

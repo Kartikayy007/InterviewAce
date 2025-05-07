@@ -6,64 +6,86 @@ struct ContentView: View {
     @EnvironmentObject var voiceViewModel: VoiceBarViewModel
     @EnvironmentObject var aiViewModel: AIViewModel
 
+    // Computed property to determine if we should show the AI output
+    private var shouldShowAIOutput: Bool {
+        if case .idle = aiViewModel.state {
+            return false
+        }
+        return true
+    }
+
+    // Computed property to determine if we should show the code output
+    private var shouldShowCodeOutput: Bool {
+        return aiViewModel.selectedCodeCard != nil
+    }
+
     var body: some View {
         ZStack {
             VStack(spacing: 16) {
+                // TopBar is always visible
                 TopBar()
                     .environmentObject(minimizeVM)
-                    .opacity(1) // Always visible
-                    .background(minimizeVM.isMinimized ? Color.black.opacity(0.3) : Color.clear) // Add background to TopBar when minimized
-                    .cornerRadius(minimizeVM.isMinimized ? 16 : 0) // Make TopBar rounded when minimized
-                    .padding(.horizontal, 0) // Consistent padding in both states
+                    .opacity(1)
+                    .background(minimizeVM.isMinimized ? Color.black.opacity(0.3) : Color.clear)
+                    .cornerRadius(minimizeVM.isMinimized ? 16 : 0)
+                    .padding(.horizontal, 0)
 
                 if !minimizeVM.isMinimized {
+                    // Main content area
                     HStack(spacing: 16) {
+                        // Left column - Voice bar and AI output
                         VStack(spacing: 16) {
+                            // Voice bar is always visible when not minimized
                             VoiceBar(viewModel: voiceViewModel)
-                            AIOutputView()
-                                .environmentObject(aiViewModel)
+
+                            // AI Output appears only when there's a response
+                            AnimatedContainer {
+                                if shouldShowAIOutput {
+                                    AIOutputView()
+                                        .environmentObject(aiViewModel)
+                                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                                }
+                            }
                         }
 
-                        VStack(spacing: 16) {
-                            // Ensure the same instance of AIViewModel is passed to both views
-                            let sharedViewModel = aiViewModel
+                        // Right column - Code output and tertiary box
+                        AnimatedContainer {
+                            if shouldShowCodeOutput {
+                                VStack(spacing: 16) {
+                                    // Ensure the same instance of AIViewModel is passed to both views
+                                    let sharedViewModel = aiViewModel
 
-                            // Create a unique ID based on the selected card to force view recreation
-                            let selectedCard = sharedViewModel.selectedCodeCard
-                            let codeCardId = selectedCard?.id ?? "none"
-                            let codeLength = selectedCard?.code.count ?? 0
+                                    // Create a unique ID based on the selected card to force view recreation
+                                    let selectedCard = sharedViewModel.selectedCodeCard
+                                    let codeCardId = selectedCard?.id ?? "none"
+                                    let codeLength = selectedCard?.code.count ?? 0
 
-                            // Log debug info outside the view hierarchy
-//                            DispatchQueue.main.async {
-//                                print("ContentView: Rendering OutputCodeView with card ID: \(codeCardId), code length: \(codeLength)")
-//                            }
+                                    // Force view recreation when selected card changes
+                                    let viewId = "output-code-view-\(codeCardId)-\(codeLength)"
 
-                            // Force view recreation when selected card changes
-                            // Use a unique ID that includes both the card ID and code length
-                            // This ensures the view is recreated when either changes
-                            let viewId = "output-code-view-\(codeCardId)-\(codeLength)"
+                                    OutputCodeView()
+                                        .environmentObject(sharedViewModel)
+                                        .id(viewId)
 
-                            OutputCodeView()
-                                .environmentObject(sharedViewModel)
-                                .id(viewId)
-
-                            TertiaryBox()
+                                    TertiaryBox()
+                                }
+                                .transition(.move(edge: .trailing).combined(with: .opacity))
+                            }
                         }
                     }
-                    .opacity(minimizeVM.isMinimized ? 0 : 1) // Hide content but not TopBar when minimized
                 }
             }
-            .padding(minimizeVM.isMinimized ? 0 : 20) // Remove padding when minimized
+            .padding(minimizeVM.isMinimized ? 0 : 20)
         }
         .frame(
-            minWidth: minimizeVM.isMinimized ? 600 : 1000,  // Increase minimized width to fit content
-            maxWidth: minimizeVM.isMinimized ? 600 : 1000,  // Increase minimized width to fit content
+            minWidth: minimizeVM.isMinimized ? 600 : 1000,
+            maxWidth: minimizeVM.isMinimized ? 600 : 1000,
             minHeight: minimizeVM.isMinimized ? 80 : 700,
             maxHeight: minimizeVM.isMinimized ? 80 : 700
         )
         .background(
             RoundedRectangle(cornerRadius: 24)
-                .fill(.ultraThinMaterial.opacity(minimizeVM.isMinimized ? 0.0 : 0.1)) // Completely transparent when minimized
+                .fill(.ultraThinMaterial.opacity(minimizeVM.isMinimized ? 0.0 : 0.1))
         )
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .shadow(color: Color.white.opacity(minimizeVM.isMinimized ? 0.0 : 0.1), radius: minimizeVM.isMinimized ? 0 : 10, x: 0, y: 5)
@@ -72,8 +94,10 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
-        .environmentObject(MinimizeViewModel())
-        .environmentObject(VoiceBarViewModel())
-        .environmentObject(AIViewModel())
+    AnimatedContainer {
+        ContentView()
+            .environmentObject(MinimizeViewModel())
+            .environmentObject(VoiceBarViewModel())
+            .environmentObject(AIViewModel())
+    }
 }

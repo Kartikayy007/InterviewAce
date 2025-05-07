@@ -192,13 +192,11 @@ struct CodeTextView: NSViewRepresentable {
     }
 }
 
+// Create a separate preview provider to avoid Firebase initialization issues
 #Preview {
     CodeEditorView(
-        code: .constant("func example() {\n    print(\"Hello, world!\")\n}"),
+        code: .constant("// Example code\nfunc helloWorld() {\n    print(\"Hello, world!\")\n}"),
         language: "swift",
         isEditable: true
     )
-    .frame(height: 200)
-    .padding()
-    .background(Color.black)
 }

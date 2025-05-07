@@ -95,6 +95,9 @@ struct OutputCodeView: View {
 //    }
 //}
 
-//#Preview {
-//    OutputCodePreview()
-//}
+#Preview {
+    OutputCodeView()
+        .environmentObject(MinimizeViewModel())
+        .environmentObject(VoiceBarViewModel())
+        .environmentObject(AIViewModel())
+}
