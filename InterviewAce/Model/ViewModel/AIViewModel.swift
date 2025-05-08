@@ -2,6 +2,7 @@ import SwiftUI
 import FirebaseVertexAI
 import FirebaseCore
 import Combine
+import MarkdownUI
 
 enum AIProcessingState {
     case idle
@@ -15,9 +16,11 @@ class AIViewModel: ObservableObject {
     @Published var response: String = ""
     @Published var isProcessing: Bool = false
 
-    // New properties for enhanced response format
+    // Property for enhanced response format
     @Published var parsedResponse: AIResponseModel?
-    @Published var selectedCodeCard: AIResponseModel.CodeCard?
+
+    // Property for MarkdownUI content
+    @Published var markdownContent: MarkdownContent?
 
     private var geminiService = GeminiService()
     private var cancellables = Set<AnyCancellable>()
@@ -37,7 +40,7 @@ class AIViewModel: ObservableObject {
                     self.state = .idle
                     self.isProcessing = false
                     self.parsedResponse = nil
-                    self.selectedCodeCard = nil
+                    self.markdownContent = nil
                 case .processing:
                     self.state = .processing
                     self.isProcessing = true
@@ -48,48 +51,20 @@ class AIViewModel: ObservableObject {
 
                     print("AIViewModel: Processing successful response: \(text.prefix(100))...")
 
-                    // Try to parse the response as JSON
-                    self.parsedResponse = AIResponseModel.parse(from: text)
+                    // We're receiving plain markdown text
+                    print("AIViewModel: Processing markdown response")
 
-                    // If parsing failed, create a simple text-only response
-                    if self.parsedResponse == nil {
-                        print("AIViewModel: JSON parsing failed, creating text-only response")
-                        self.parsedResponse = AIResponseModel(text: text, code_cards: nil)
-                    } else {
-                        print("AIViewModel: Successfully parsed response")
+                    // Create a response model with the markdown text
+                    // This will automatically extract code blocks from the markdown
+                    self.parsedResponse = AIResponseModel(text: text, code_cards: nil)
 
-                        // Log the code cards
-                        if let codeCards = self.parsedResponse?.code_cards, !codeCards.isEmpty {
-                            print("AIViewModel: Found \(codeCards.count) code cards:")
-                            for (index, card) in codeCards.enumerated() {
-                                print("  Card \(index+1): \(card.title) (\(card.language)) - \(card.code.count) chars")
-                            }
-                        } else {
-                            print("AIViewModel: No code cards found in parsed response")
-                        }
-                    }
-
-                    // Reset selected code card
-                    self.selectedCodeCard = nil
-
-                    // If there are code cards, select the first one automatically
-                    if let codeCards = self.parsedResponse?.code_cards, !codeCards.isEmpty {
-                        let firstCard = codeCards.first!
-                        print("AIViewModel: Auto-selecting first code card: \(firstCard.title)")
-
-                        // Use a short delay to ensure the UI has time to update
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            print("AIViewModel: Setting selected code card to: \(firstCard.title)")
-                            self.selectedCodeCard = firstCard
-                        }
-                    } else {
-                        print("AIViewModel: No code cards to select")
-                    }
+                    // Create MarkdownContent for MarkdownUI
+                    self.markdownContent = MarkdownContent(text)
                 case .error(let errorMessage):
                     self.state = .error(errorMessage)
                     self.isProcessing = false
                     self.parsedResponse = nil
-                    self.selectedCodeCard = nil
+                    self.markdownContent = nil
                 }
             }
             .store(in: &cancellables)
@@ -125,35 +100,5 @@ class AIViewModel: ObservableObject {
         geminiService.cancelRequest()
     }
 
-    /// Select a code card to display in the OutputCodeView
-    func selectCodeCard(_ codeCard: AIResponseModel.CodeCard?) {
-        print("AIViewModel: Selecting code card: \(String(describing: codeCard?.title))")
 
-        // Log the code content if available
-        if let card = codeCard {
-            print("AIViewModel: Card code content: \(card.code.prefix(100))...")
-            print("AIViewModel: Card code length: \(card.code.count) chars")
-        }
-
-        // First set to nil to ensure the change is detected
-        self.selectedCodeCard = nil
-
-        // Then set the new card after a very short delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            print("AIViewModel: Setting selected code card after delay")
-            self.selectedCodeCard = codeCard
-
-            // Log the selected card details
-            if let card = codeCard {
-                print("AIViewModel: Selected card set to \(card.title) with \(card.code.count) chars of code")
-
-                // Post a notification to inform any interested parties
-                NotificationCenter.default.post(
-                    name: Notification.Name("CodeCardSelected"),
-                    object: nil,
-                    userInfo: ["cardTitle": card.title, "codeLength": card.code.count]
-                )
-            }
-        }
-    }
 }

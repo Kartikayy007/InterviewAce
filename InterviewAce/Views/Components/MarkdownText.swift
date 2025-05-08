@@ -6,39 +6,46 @@ struct MarkdownText: View {
     let text: String
     var fontSize: CGFloat = 16
     var textColor: Color = .white
-    
+
+    // Return the original text without removing code blocks
+    private var processedText: String {
+        return text
+    }
+
     var body: some View {
         if #available(macOS 12.0, *) {
             // Use the built-in Markdown support
             Text(attributedMarkdownText)
                 .textSelection(.enabled)
+                .lineSpacing(4)
         } else {
             // Fallback for older versions
-            Text(text)
+            Text(processedText)
                 .textSelection(.enabled)
                 .foregroundColor(textColor)
                 .font(.system(size: fontSize))
+                .lineSpacing(4)
         }
     }
-    
+
     // Create AttributedString from markdown
     @available(macOS 12.0, *)
     private var attributedMarkdownText: AttributedString {
         do {
             // First parse the markdown into an AttributedString
-            let attributedString = try AttributedString(markdown: text, options: AttributedString.MarkdownParsingOptions(
+            let attributedString = try AttributedString(markdown: processedText, options: AttributedString.MarkdownParsingOptions(
                 allowsExtendedAttributes: true,
                 interpretedSyntax: .inlineOnlyPreservingWhitespace,
                 failurePolicy: .returnPartiallyParsedIfPossible
             ))
-            
+
             // Instead of using AttributeContainer with NSFont (which isn't Sendable),
             // we'll apply styling using SwiftUI modifiers instead
             return attributedString
         } catch {
             print("Error parsing markdown: \(error)")
             // If parsing fails, return plain text
-            return AttributedString(text)
+            return AttributedString(processedText)
         }
     }
 }

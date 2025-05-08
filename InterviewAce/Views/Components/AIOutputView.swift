@@ -1,52 +1,55 @@
-//
-//  MainBox.swift
-//  InterviewAce
-//
-//  Created by kartikay on 01/05/25.
-//
-
-
 import SwiftUI
+import AppKit
+import MarkdownUI
 
-/// Main content box shown in the left column below the Siri voice bar
+/// Main content box shown below the voice bar
 struct AIOutputView: View {
     @EnvironmentObject var aiViewModel: AIViewModel
+
+    // State to track content size
+    @State private var contentHeight: CGFloat = 0
+
+    // Minimum and maximum height for the AIOutputView
+    private let minHeight: CGFloat = 100 // Minimum height for short responses
+    private let maxHeight: CGFloat = 500 // Maximum height before scrolling
 
     var body: some View {
         // Use a ZStack to layer the content
         ZStack {
-            // Use the GlassBox component as the background
-            GlassBox(title: "", height: 500)
+            // Use the GlassBox component as the background with dynamic height
+            GlassBox(title: "", height: min(max(contentHeight + 40, minHeight), maxHeight))
+                .contentShape(Rectangle()) // Ensure the entire area is tappable
 
             VStack(alignment: .leading, spacing: 12) {
-                // Title area
-                HStack {
-                    Text("Gemini 2.0 Flash")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white)
-
-                    Spacer()
-
-                        // Show loading indicator when processing
-                    if case .processing = aiViewModel.state {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            .scaleEffect(0.8)
-                    }
-                }
-                .padding(.bottom, 4)
-
-                Divider()
-                    .background(Color.white.opacity(0.3))
-
-                // Content area - shows response or appropriate message
                 ScrollView {
                     responseContent
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 8)
+                        .background(
+                            GeometryReader { geo in
+                                Color.clear.preference(
+                                    key: ContentHeightPreferenceKey.self,
+                                    value: geo.size.height
+                                )
+                            }
+                        )
                 }
+                .frame(height: min(contentHeight, maxHeight - 40))
             }
             .padding(20)
+            .onPreferenceChange(ContentHeightPreferenceKey.self) { height in
+                self.contentHeight = height
+            }
+        }
+        .frame(width: 700)
+        .animation(.easeInOut(duration: 0.2), value: contentHeight)
+    }
+
+    // Preference key to track content height
+    struct ContentHeightPreferenceKey: PreferenceKey {
+        static var defaultValue: CGFloat = 0
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            value = max(value, nextValue())
         }
     }
 
@@ -58,71 +61,25 @@ struct AIOutputView: View {
                 .foregroundColor(.white.opacity(0.6))
                 .italic()
                 .font(.system(size: 16))
+
         case .processing:
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Processing request...")
-                    .foregroundColor(.white.opacity(0.7))
-                    .italic()
-                    .font(.system(size: 16))
-            }
-        case .success(_):
-            // Check if we have a parsed response
-            if let parsedResponse = aiViewModel.parsedResponse {
-                VStack(alignment: .leading, spacing: 16) {
-                    // Display the text content with markdown
-                    MarkdownText(text: parsedResponse.text, fontSize: 16, textColor: .white.opacity(0.9))
-                        .foregroundColor(.white.opacity(0.9))
-                        .font(.system(size: 16))
-
-                    // Display code cards if available
-                    if let codeCards = parsedResponse.code_cards {
-                        if !codeCards.isEmpty {
-                            Divider()
-                                .background(Color.white.opacity(0.3))
-                                .padding(.vertical, 8)
-
-                            Text("Code Examples (\(codeCards.count))")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.white)
-                                .padding(.bottom, 8)
-
-                            // Display each code card
-                            ForEach(codeCards) { codeCard in
-                                CodeCardView(
-                                    codeCard: codeCard,
-                                    isSelected: aiViewModel.selectedCodeCard?.id == codeCard.id,
-                                    onSelect: {
-                                        print("AIOutputView: Code card clicked: \(codeCard.title)")
-                                        print("AIOutputView: Code: \(codeCard.code.prefix(50))...")
-                                        aiViewModel.selectCodeCard(codeCard)
-                                    }
-                                )
-                                .padding(.bottom, 8)
-                                .onAppear {
-                                    print("AIOutputView: Code card appeared in UI: \(codeCard.title)")
-                                }
-                            }
-                        } else {
-                            // Empty code cards array
-                            Text("No code examples available")
-                                .foregroundColor(.white.opacity(0.6))
-                                .italic()
-                                .padding(.top, 8)
-                        }
-                    } else {
-                        // Nil code cards
-                        Text("No code examples available")
-                            .foregroundColor(.white.opacity(0.6))
-                            .italic()
-                            .padding(.top, 8)
-                    }
-                }
+            // If we have a previous response, show it while processing
+            if !aiViewModel.response.isEmpty {
+                displayResponseContent(aiViewModel.response)
+                    .opacity(0.7) // Dim the previous response to indicate it's being updated
             } else {
-                // Fallback to displaying raw response if parsing failed
-                MarkdownText(text: aiViewModel.response, fontSize: 16, textColor: .white.opacity(0.9))
-                    .foregroundColor(.white.opacity(0.9))
-                    .font(.system(size: 16))
+                // Otherwise show the thinking message
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Thinking...")
+                        .foregroundColor(.white.opacity(0.7))
+                        .italic()
+                        .font(.system(size: 16))
+                }
             }
+
+        case .success(let responseText):
+            displayResponseContent(responseText)
+
         case .error(let errorMessage):
             VStack(alignment: .leading, spacing: 8) {
                 Text("Error")
@@ -134,12 +91,29 @@ struct AIOutputView: View {
             }
         }
     }
+
+    @ViewBuilder
+    private func displayResponseContent(_ responseText: String) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Debug log
+            let _ = print("AIOutputView: Displaying response of length \(responseText.count)")
+
+            if let markdownContent = aiViewModel.markdownContent {
+                // Use MarkdownUI's Markdown view directly if we have parsed content
+                Markdown(markdownContent)
+                    .markdownTheme(.custom)
+                    .textSelection(.enabled)
+            } else {
+                // Fallback to our custom view if parsing failed
+                MarkdownUIView(markdownContent: responseText)
+            }
+        }
+    }
 }
 
-#Preview {
-    AIOutputView()
-        .environmentObject(AIViewModel())
-        .frame(width: 500, height: 500)
-        .background(Color.black)
-}
-
+//#Preview {
+//    AIOutputView()
+//        .environmentObject(AIViewModel())
+//        .frame(width: 500, height: 500)
+//        .background(Color.black)
+//}

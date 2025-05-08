@@ -25,7 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // Property to store the original frame
     var savedWindowFrame: NSRect?
-
+    
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Set the shared instance
         AppDelegate.shared = self
@@ -273,7 +273,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func configureWindow(_ window: NSWindow) {
-        window.sharingType = .none
+//        window.sharingType = .none
 
         // Set background color with transparency
         window.backgroundColor = NSColor.clear

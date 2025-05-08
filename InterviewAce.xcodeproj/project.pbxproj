@@ -9,7 +9,8 @@
 /* Begin PBXBuildFile section */
 		931293282DC7A83B00C6FD3B /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 931293272DC7A83B00C6FD3B /* FirebaseCore */; };
 		9312932A2DC7A83B00C6FD3B /* FirebaseVertexAI in Frameworks */ = {isa = PBXBuildFile; productRef = 931293292DC7A83B00C6FD3B /* FirebaseVertexAI */; };
-		9356C74C2DCA9A5800E57201 /* Highlighter in Frameworks */ = {isa = PBXBuildFile; productRef = 9356C74B2DCA9A5800E57201 /* Highlighter */; };
+		932E7E522DCC21E4003113C5 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 932E7E512DCC21E4003113C5 /* MarkdownUI */; };
+		932E7E5D2DCCB0D3003113C5 /* HighlightSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 932E7E5C2DCCB0D3003113C5 /* HighlightSwift */; };
 		93D344F02DC146A40038EFEF /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 93D344EF2DC146A40038EFEF /* HotKey */; };
 /* End PBXBuildFile section */
 
@@ -60,9 +61,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				9312932A2DC7A83B00C6FD3B /* FirebaseVertexAI in Frameworks */,
-				9356C74C2DCA9A5800E57201 /* Highlighter in Frameworks */,
 				931293282DC7A83B00C6FD3B /* FirebaseCore in Frameworks */,
+				932E7E5D2DCCB0D3003113C5 /* HighlightSwift in Frameworks */,
 				93D344F02DC146A40038EFEF /* HotKey in Frameworks */,
+				932E7E522DCC21E4003113C5 /* MarkdownUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -126,7 +128,8 @@
 				93D344EF2DC146A40038EFEF /* HotKey */,
 				931293272DC7A83B00C6FD3B /* FirebaseCore */,
 				931293292DC7A83B00C6FD3B /* FirebaseVertexAI */,
-				9356C74B2DCA9A5800E57201 /* Highlighter */,
+				932E7E512DCC21E4003113C5 /* MarkdownUI */,
+				932E7E5C2DCCB0D3003113C5 /* HighlightSwift */,
 			);
 			productName = InterviewAce;
 			productReference = 93D344922DC0CD720038EFEF /* InterviewAce.app */;
@@ -213,7 +216,8 @@
 			packageReferences = (
 				93D344ED2DC145B00038EFEF /* XCRemoteSwiftPackageReference "HotKey" */,
 				931293242DC7A63200C6FD3B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-				9356C7482DCA98E100E57201 /* XCRemoteSwiftPackageReference "HighlighterSwift" */,
+				932E7E502DCC21E4003113C5 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
+				932E7E5B2DCCB0D3003113C5 /* XCRemoteSwiftPackageReference "highlightswift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 93D344932DC0CD720038EFEF /* Products */;
@@ -577,12 +581,20 @@
 				minimumVersion = 11.12.0;
 			};
 		};
-		9356C7482DCA98E100E57201 /* XCRemoteSwiftPackageReference "HighlighterSwift" */ = {
+		932E7E502DCC21E4003113C5 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/smittytone/HighlighterSwift.git";
+			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.1.6;
+				minimumVersion = 2.4.1;
+			};
+		};
+		932E7E5B2DCCB0D3003113C5 /* XCRemoteSwiftPackageReference "highlightswift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/appstefan/highlightswift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.9;
 			};
 		};
 		93D344ED2DC145B00038EFEF /* XCRemoteSwiftPackageReference "HotKey" */ = {
@@ -606,10 +618,15 @@
 			package = 931293242DC7A63200C6FD3B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseVertexAI;
 		};
-		9356C74B2DCA9A5800E57201 /* Highlighter */ = {
+		932E7E512DCC21E4003113C5 /* MarkdownUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 9356C7482DCA98E100E57201 /* XCRemoteSwiftPackageReference "HighlighterSwift" */;
-			productName = Highlighter;
+			package = 932E7E502DCC21E4003113C5 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
+			productName = MarkdownUI;
+		};
+		932E7E5C2DCCB0D3003113C5 /* HighlightSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 932E7E5B2DCCB0D3003113C5 /* XCRemoteSwiftPackageReference "highlightswift" */;
+			productName = HighlightSwift;
 		};
 		93D344EF2DC146A40038EFEF /* HotKey */ = {
 			isa = XCSwiftPackageProductDependency;

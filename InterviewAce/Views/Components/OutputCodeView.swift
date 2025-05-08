@@ -9,40 +9,37 @@
 import SwiftUI
 
 struct OutputCodeView: View {
-    @EnvironmentObject var aiViewModel: AIViewModel
+    // Sample code for display
+    private let sampleCode = """
+    func exampleCode() {
+        print("This is a sample code")
 
-    // Use computed properties to always get the latest data
-    private var currentCode: String {
-        return aiViewModel.selectedCodeCard?.code ?? ""
+        // This view is no longer used in the app
+        // It has been replaced by inline code in AIOutputView
+        let message = "Hello, world!"
+        print(message)
     }
+    """
 
-    private var currentTitle: String {
-        return aiViewModel.selectedCodeCard?.title ?? "Code"
-    }
-
-    private var currentLanguage: String {
-        return aiViewModel.selectedCodeCard?.language ?? "text"
-    }
-
-    // State to track view updates
-    @State private var forceRefresh: UUID = UUID()
+    private let title = "Sample Code"
+    private let language = "swift"
 
     var body: some View {
         ZStack {
             // Use the GlassBox component as the background
-            GlassBox(title: "", height: 400)
+            GlassBox(title: "", height: 500)
 
             VStack(alignment: .leading, spacing: 12) {
                 // Title area
                 HStack {
-                    Text(currentTitle)
+                    Text(title)
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.white)
 
                     Spacer()
 
                     // Language badge
-                    Text(currentLanguage)
+                    Text(language)
                         .font(.system(size: 14, weight: .medium))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
@@ -56,19 +53,13 @@ struct OutputCodeView: View {
 
                 // Code content area - takes remaining space
                 ZStack {
-                    if !currentCode.isEmpty {
-                        ScrollView(.vertical, showsIndicators: true) {
-                            Text(currentCode)
-                                .font(.system(size: 14, weight: .regular, design: .monospaced))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(12)
-                                .textSelection(.enabled)
-                        }
-                    } else {
-                        Text("No code available")
-                            .foregroundColor(.white.opacity(0.6))
-                            .italic()
+                    ScrollView(.vertical, showsIndicators: true) {
+                        Text(sampleCode)
+                            .font(.system(size: 14, weight: .regular, design: .monospaced))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(12)
+                            .textSelection(.enabled)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -76,12 +67,6 @@ struct OutputCodeView: View {
                 .cornerRadius(8)
             }
             .padding(20)
-            .onReceive(aiViewModel.$selectedCodeCard) { newCard in
-                if newCard != nil {
-                    // Force a refresh by generating a new UUID
-                    forceRefresh = UUID()
-                }
-            }
         }
     }
 }
@@ -97,7 +82,5 @@ struct OutputCodeView: View {
 
 #Preview {
     OutputCodeView()
-        .environmentObject(MinimizeViewModel())
-        .environmentObject(VoiceBarViewModel())
-        .environmentObject(AIViewModel())
+        .background(Color.black.opacity(0.5))
 }

@@ -1,5 +1,5 @@
 {
-  "originHash" : "30b29488880a0838cf77b61b38bc27a7efa87e17bd3e48591e537f2fedf38123",
+  "originHash" : "54aa896f7e97847674c8c20c05a9d85d3c801d467f91d016e7aaf3e14f3aadaa",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -74,12 +74,12 @@
       }
     },
     {
-      "identity" : "highlighterswift",
+      "identity" : "highlightswift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/smittytone/HighlighterSwift.git",
+      "location" : "https://github.com/appstefan/highlightswift",
       "state" : {
-        "revision" : "7faedca3fe85b807848f8ac9729427a1abcf8a90",
-        "version" : "1.1.6"
+        "revision" : "784ca3ccfc8a2cf724fbb2f06cb6ec3329424da3",
+        "version" : "1.1.0"
       }
     },
     {
@@ -119,12 +119,39 @@
       }
     },
     {
+      "identity" : "networkimage",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/gonzalezreal/NetworkImage",
+      "state" : {
+        "revision" : "2849f5323265386e200484b0d0f896e73c3411b9",
+        "version" : "6.0.1"
+      }
+    },
+    {
       "identity" : "promises",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/google/promises.git",
       "state" : {
         "revision" : "540318ecedd63d883069ae7f1ed811a2df00b6ac",
         "version" : "2.4.0"
+      }
+    },
+    {
+      "identity" : "swift-cmark",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-cmark",
+      "state" : {
+        "revision" : "b022b08312decdc46585e0b3440d97f6f22ef703",
+        "version" : "0.6.0"
+      }
+    },
+    {
+      "identity" : "swift-markdown-ui",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/gonzalezreal/swift-markdown-ui",
+      "state" : {
+        "revision" : "5f613358148239d0292c0cef674a3c2314737f9e",
+        "version" : "2.4.1"
       }
     },
     {

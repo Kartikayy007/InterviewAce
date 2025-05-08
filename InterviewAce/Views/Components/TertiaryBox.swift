@@ -14,6 +14,14 @@ struct TertiaryBox: View {
         // Use the GlassBox component with custom height
         // This is the bottom box in the right column
         GlassBox(title: "Tertiary box", height: 180)
+        VStack {
+            Text("This is regular text.")
+            Text("* This is **bold** text, this is *italic* text, and this is ***bold, italic*** text.")
+            Text("~~A strikethrough example~~")
+            Text("`Monospaced works too`")
+            Text("Visit Apple: [click here](https://apple.com)")
+        }
+
     }
 }
 

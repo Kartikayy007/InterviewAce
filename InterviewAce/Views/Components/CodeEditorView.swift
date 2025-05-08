@@ -13,26 +13,16 @@ struct CodeEditorView: View {
     }
 
     var body: some View {
-        VStack {
-            // Add a debug label to show code length
-            Text("Editor code length: \(code.count) chars")
-                .font(.system(size: 10))
-                .foregroundColor(.gray.opacity(0.8))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 8)
-                .padding(.bottom, 2)
-
-            GeometryReader { geometry in
-                CodeTextView(
-                    code: $code,
-                    language: language,
-                    isEditable: isEditable,
-                    size: geometry.size
-                )
-            }
-            .background(Color.black.opacity(0.3))
-            .cornerRadius(8)
+        GeometryReader { geometry in
+            CodeTextView(
+                code: $code,
+                language: language,
+                isEditable: isEditable,
+                size: geometry.size
+            )
         }
+        .background(Color.black.opacity(0.3))
+        .cornerRadius(8)
         .id(codeId) // Force refresh when code changes
     }
 }
@@ -131,7 +121,17 @@ struct CodeTextView: NSViewRepresentable {
 
         // Apply language-specific highlighting
         switch language.lowercased() {
-        case "swift", "javascript", "python", "java", "c", "cpp", "csharp", "go", "rust", "typescript":
+        case "swift":
+            highlightSwiftCode(attributedString, string: string)
+        case "python":
+            highlightPythonCode(attributedString, string: string)
+        case "javascript", "typescript":
+            highlightJavaScriptCode(attributedString, string: string)
+        case "java":
+            highlightJavaCode(attributedString, string: string)
+        case "c", "cpp", "csharp":
+            highlightCStyleCode(attributedString, string: string)
+        case "go", "rust":
             highlightCode(attributedString, string: string)
         default:
             // For unknown languages, just use basic highlighting
@@ -142,7 +142,229 @@ struct CodeTextView: NSViewRepresentable {
         textView.textStorage?.setAttributedString(attributedString)
     }
 
-    /// Apply basic syntax highlighting to code
+    /// Apply Python-specific syntax highlighting
+    static private func highlightPythonCode(_ attributedString: NSMutableAttributedString, string: String) {
+        // Python keywords
+        let keywords = ["def", "class", "if", "elif", "else", "for", "while", "return", "import", "from",
+                        "as", "try", "except", "finally", "with", "in", "is", "not", "and", "or",
+                        "True", "False", "None", "lambda", "global", "nonlocal", "pass", "break",
+                        "continue", "yield", "assert", "del", "raise", "async", "await"]
+
+        // Python built-in functions
+        let builtins = ["print", "len", "range", "enumerate", "dict", "list", "tuple", "set", "int",
+                        "str", "float", "bool", "map", "filter", "zip", "sum", "min", "max", "sorted",
+                        "reversed", "any", "all", "abs", "round", "open", "type"]
+
+        // Comments
+        let commentPattern = "#.*$"
+
+        // Strings
+        let stringPattern = "\"\"\"[\\s\\S]*?\"\"\"|'''[\\s\\S]*?'''|\"[^\"\\\\]*(\\\\.[^\"\\\\]*)*\"|'[^'\\\\]*(\\\\.[^'\\\\]*)*'"
+
+        // Numbers
+        let numberPattern = "\\b\\d+(\\.\\d+)?\\b"
+
+        // Decorators
+        let decoratorPattern = "@\\w+(\\.\\w+)*"
+
+        // Highlight keywords
+        for keyword in keywords {
+            let pattern = "\\b\(keyword)\\b"
+            highlightPattern(pattern, in: attributedString, string: string, color: NSColor.systemPink)
+        }
+
+        // Highlight built-ins
+        for builtin in builtins {
+            let pattern = "\\b\(builtin)\\b"
+            highlightPattern(pattern, in: attributedString, string: string, color: NSColor.systemBlue)
+        }
+
+        // Highlight comments
+        highlightPattern(commentPattern, in: attributedString, string: string, color: NSColor.systemGreen)
+
+        // Highlight strings
+        highlightPattern(stringPattern, in: attributedString, string: string, color: NSColor.systemRed)
+
+        // Highlight numbers
+        highlightPattern(numberPattern, in: attributedString, string: string, color: NSColor.systemOrange)
+
+        // Highlight decorators
+        highlightPattern(decoratorPattern, in: attributedString, string: string, color: NSColor.systemPurple)
+    }
+
+    /// Apply Swift-specific syntax highlighting
+    static private func highlightSwiftCode(_ attributedString: NSMutableAttributedString, string: String) {
+        // Swift keywords
+        let keywords = ["func", "let", "var", "if", "else", "for", "while", "return", "class", "struct",
+                        "enum", "switch", "case", "break", "continue", "import", "public", "private",
+                        "internal", "fileprivate", "static", "final", "void", "Int", "String", "Bool",
+                        "true", "false", "nil", "self", "super", "init", "deinit", "get", "set", "weak",
+                        "unowned", "guard", "defer", "throw", "throws", "rethrows", "try", "catch",
+                        "protocol", "extension", "where", "associatedtype", "typealias", "as", "is",
+                        "in", "mutating", "nonmutating", "convenience", "required", "override", "final"]
+
+        // Comments
+        let singleLineCommentPattern = "//.*$"
+        let multiLineCommentPattern = "/\\*[\\s\\S]*?\\*/"
+
+        // Strings
+        let stringPattern = "\"\"\"[\\s\\S]*?\"\"\"|\"[^\"\\\\]*(\\\\.[^\"\\\\]*)*\""
+
+        // Numbers
+        let numberPattern = "\\b\\d+(\\.\\d+)?\\b"
+
+        // Highlight keywords
+        for keyword in keywords {
+            let pattern = "\\b\(keyword)\\b"
+            highlightPattern(pattern, in: attributedString, string: string, color: NSColor.systemPink)
+        }
+
+        // Highlight comments
+        highlightPattern(singleLineCommentPattern, in: attributedString, string: string, color: NSColor.systemGreen)
+        highlightPattern(multiLineCommentPattern, in: attributedString, string: string, color: NSColor.systemGreen)
+
+        // Highlight strings
+        highlightPattern(stringPattern, in: attributedString, string: string, color: NSColor.systemRed)
+
+        // Highlight numbers
+        highlightPattern(numberPattern, in: attributedString, string: string, color: NSColor.systemOrange)
+    }
+
+    /// Apply JavaScript-specific syntax highlighting
+    static private func highlightJavaScriptCode(_ attributedString: NSMutableAttributedString, string: String) {
+        // JavaScript keywords
+        let keywords = ["function", "let", "var", "const", "if", "else", "for", "while", "return", "class",
+                        "switch", "case", "break", "continue", "import", "export", "default", "from",
+                        "true", "false", "null", "undefined", "this", "super", "async", "await", "try",
+                        "catch", "finally", "throw", "new", "delete", "typeof", "instanceof", "in", "of",
+                        "yield", "static", "get", "set", "extends", "implements", "interface", "package",
+                        "private", "protected", "public", "with", "as", "debugger"]
+
+        // Built-in objects and functions
+        let builtins = ["console", "document", "window", "Array", "Object", "String", "Number", "Boolean",
+                        "Function", "Promise", "Map", "Set", "Date", "Math", "JSON", "Error", "RegExp"]
+
+        // Comments
+        let singleLineCommentPattern = "//.*$"
+        let multiLineCommentPattern = "/\\*[\\s\\S]*?\\*/"
+
+        // Strings
+        let stringPattern = "`[^`\\\\]*(\\\\.[^`\\\\]*)*`|\"[^\"\\\\]*(\\\\.[^\"\\\\]*)*\"|'[^'\\\\]*(\\\\.[^'\\\\]*)*'"
+
+        // Numbers
+        let numberPattern = "\\b\\d+(\\.\\d+)?\\b"
+
+        // Highlight keywords
+        for keyword in keywords {
+            let pattern = "\\b\(keyword)\\b"
+            highlightPattern(pattern, in: attributedString, string: string, color: NSColor.systemPink)
+        }
+
+        // Highlight built-ins
+        for builtin in builtins {
+            let pattern = "\\b\(builtin)\\b"
+            highlightPattern(pattern, in: attributedString, string: string, color: NSColor.systemBlue)
+        }
+
+        // Highlight comments
+        highlightPattern(singleLineCommentPattern, in: attributedString, string: string, color: NSColor.systemGreen)
+        highlightPattern(multiLineCommentPattern, in: attributedString, string: string, color: NSColor.systemGreen)
+
+        // Highlight strings
+        highlightPattern(stringPattern, in: attributedString, string: string, color: NSColor.systemRed)
+
+        // Highlight numbers
+        highlightPattern(numberPattern, in: attributedString, string: string, color: NSColor.systemOrange)
+    }
+
+    /// Apply Java-specific syntax highlighting
+    static private func highlightJavaCode(_ attributedString: NSMutableAttributedString, string: String) {
+        // Java keywords
+        let keywords = ["abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class",
+                        "const", "con   tinue", "default", "do", "double", "else", "enum", "extends", "final",
+                        "finally", "float", "for", "if", "implements", "import", "instanceof", "int",
+                        "interface", "long", "native", "new", "package", "private", "protected", "public",
+                        "return", "short", "static", "strictfp", "super", "switch", "synchronized", "this",
+                        "throw", "throws", "transient", "try", "void", "volatile", "while", "true", "false",
+                        "null"]
+
+        // Comments
+        let singleLineCommentPattern = "//.*$"
+        let multiLineCommentPattern = "/\\*[\\s\\S]*?\\*/"
+
+        // Strings
+        let stringPattern = "\"[^\"\\\\]*(\\\\.[^\"\\\\]*)*\"|'[^'\\\\]*(\\\\.[^'\\\\]*)*'"
+
+        // Numbers
+        let numberPattern = "\\b\\d+(\\.\\d+)?[fFdDlL]?\\b"
+
+        // Annotations
+        let annotationPattern = "@\\w+"
+
+        // Highlight keywords
+        for keyword in keywords {
+            let pattern = "\\b\(keyword)\\b"
+            highlightPattern(pattern, in: attributedString, string: string, color: NSColor.systemPink)
+        }
+
+        // Highlight comments
+        highlightPattern(singleLineCommentPattern, in: attributedString, string: string, color: NSColor.systemGreen)
+        highlightPattern(multiLineCommentPattern, in: attributedString, string: string, color: NSColor.systemGreen)
+
+        // Highlight strings
+        highlightPattern(stringPattern, in: attributedString, string: string, color: NSColor.systemRed)
+
+        // Highlight numbers
+        highlightPattern(numberPattern, in: attributedString, string: string, color: NSColor.systemOrange)
+
+        // Highlight annotations
+        highlightPattern(annotationPattern, in: attributedString, string: string, color: NSColor.systemPurple)
+    }
+
+    /// Apply C-style syntax highlighting (C, C++, C#)
+    static private func highlightCStyleCode(_ attributedString: NSMutableAttributedString, string: String) {
+        // C-style keywords
+        let keywords = ["auto", "break", "case", "char", "const", "continue", "default", "do", "double",
+                        "else", "enum", "extern", "float", "for", "goto", "if", "int", "long", "register",
+                        "return", "short", "signed", "sizeof", "static", "struct", "switch", "typedef",
+                        "union", "unsigned", "void", "volatile", "while", "class", "namespace", "template",
+                        "new", "delete", "this", "friend", "using", "public", "private", "protected",
+                        "virtual", "inline", "operator", "overload", "true", "false", "null", "nullptr"]
+
+        // Comments
+        let singleLineCommentPattern = "//.*$"
+        let multiLineCommentPattern = "/\\*[\\s\\S]*?\\*/"
+
+        // Strings
+        let stringPattern = "\"[^\"\\\\]*(\\\\.[^\"\\\\]*)*\"|'[^'\\\\]*(\\\\.[^'\\\\]*)*'"
+
+        // Numbers
+        let numberPattern = "\\b\\d+(\\.\\d+)?[fFlLuU]*\\b"
+
+        // Preprocessor directives
+        let preprocessorPattern = "#\\w+"
+
+        // Highlight keywords
+        for keyword in keywords {
+            let pattern = "\\b\(keyword)\\b"
+            highlightPattern(pattern, in: attributedString, string: string, color: NSColor.systemPink)
+        }
+
+        // Highlight comments
+        highlightPattern(singleLineCommentPattern, in: attributedString, string: string, color: NSColor.systemGreen)
+        highlightPattern(multiLineCommentPattern, in: attributedString, string: string, color: NSColor.systemGreen)
+
+        // Highlight strings
+        highlightPattern(stringPattern, in: attributedString, string: string, color: NSColor.systemRed)
+
+        // Highlight numbers
+        highlightPattern(numberPattern, in: attributedString, string: string, color: NSColor.systemOrange)
+
+        // Highlight preprocessor directives
+        highlightPattern(preprocessorPattern, in: attributedString, string: string, color: NSColor.systemPurple)
+    }
+
+    /// Apply basic syntax highlighting to code (fallback for other languages)
     static private func highlightCode(_ attributedString: NSMutableAttributedString, string: String) {
         // Keywords (common across many languages)
         let keywords = ["func", "let", "var", "if", "else", "for", "while", "return", "class", "struct",
@@ -190,13 +412,4 @@ struct CodeTextView: NSViewRepresentable {
             print("Error creating regex: \(error)")
         }
     }
-}
-
-// Create a separate preview provider to avoid Firebase initialization issues
-#Preview {
-    CodeEditorView(
-        code: .constant("// Example code\nfunc helloWorld() {\n    print(\"Hello, world!\")\n}"),
-        language: "swift",
-        isEditable: true
-    )
 }

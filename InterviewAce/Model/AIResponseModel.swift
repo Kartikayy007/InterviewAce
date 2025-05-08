@@ -5,6 +5,17 @@ struct AIResponseModel: Codable {
     let text: String
     let code_cards: [CodeCard]?
 
+    // Computed property to extract code blocks from markdown text
+    var extractedCodeBlocks: [CodeCard] {
+        // If we already have code cards from JSON, use those
+        if let existingCards = code_cards, !existingCards.isEmpty {
+            return existingCards
+        }
+
+        // Otherwise, try to extract code blocks from the markdown text
+        return Self.extractCodeBlocksFromMarkdown(text)
+    }
+
     struct CodeCard: Codable, Identifiable, Equatable {
         let title: String
         let language: String
@@ -20,6 +31,55 @@ struct AIResponseModel: Codable {
         static func == (lhs: CodeCard, rhs: CodeCard) -> Bool {
             return lhs.id == rhs.id
         }
+    }
+
+    // Helper method to extract code blocks from markdown text
+    static func extractCodeBlocksFromMarkdown(_ markdown: String) -> [CodeCard] {
+        var codeBlocks = [CodeCard]()
+
+        print("AIResponseModel: Extracting code blocks from markdown of length \(markdown.count)")
+
+        // Regular expression to match markdown code blocks with language specifier
+        // Format: ```language\ncode\n```
+        // This pattern matches:
+        // 1. Opening ``` followed by a language identifier (letters, numbers, underscores)
+        // 2. Optional whitespace and a newline
+        // 3. Any content (including newlines) until the closing ```
+        let codeBlockPattern = "```([a-zA-Z0-9_]+)\\s*\\n([\\s\\S]*?)```"
+
+        do {
+            let regex = try NSRegularExpression(pattern: codeBlockPattern, options: [])
+            let nsString = markdown as NSString
+            let matches = regex.matches(in: markdown, options: [], range: NSRange(location: 0, length: nsString.length))
+
+            for (index, match) in matches.enumerated() {
+                if match.numberOfRanges >= 3 {
+                    let languageRange = match.range(at: 1)
+                    let codeRange = match.range(at: 2)
+
+                    let language = nsString.substring(with: languageRange)
+                    var code = nsString.substring(with: codeRange)
+
+                    // Trim trailing whitespace
+                    code = code.trimmingCharacters(in: .whitespacesAndNewlines)
+
+                    // Generate a title based on the language and index
+                    let title = "Code Block \(index + 1)"
+
+                    let codeCard = CodeCard(title: title, language: language, code: code)
+                    codeBlocks.append(codeCard)
+                }
+            }
+        } catch {
+            print("AIResponseModel: Error extracting code blocks: \(error)")
+        }
+
+        print("AIResponseModel: Extracted \(codeBlocks.count) code blocks from markdown")
+        for (index, block) in codeBlocks.enumerated() {
+            print("AIResponseModel: Code block \(index+1): \(block.language) - \(block.code.count) chars")
+        }
+
+        return codeBlocks
     }
 
     // Helper method to parse JSON string into AIResponseModel
@@ -114,9 +174,9 @@ struct AIResponseModel: Codable {
                 print("AIResponseModel: Error during manual JSON extraction: \(error)")
             }
 
-            // If all parsing attempts fail, return a simple text-only response
-            print("AIResponseModel: Falling back to text-only response")
-            return AIResponseModel(text: cleanedJson, code_cards: nil)
+            // If all parsing attempts fail, return a simple text-only response with the original text
+            print("AIResponseModel: Falling back to text-only response with original text")
+            return AIResponseModel(text: jsonString, code_cards: nil)
         }
     }
 }
