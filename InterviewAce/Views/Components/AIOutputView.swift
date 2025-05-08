@@ -5,6 +5,8 @@ import MarkdownUI
 /// Main content box shown below the voice bar
 struct AIOutputView: View {
     @EnvironmentObject var aiViewModel: AIViewModel
+    @Environment(\.colorScheme) private var colorScheme
+    @AppStorage("isDarkMode") private var isDarkMode = true
 
     // State to track content size
     @State private var contentHeight: CGFloat = 0
@@ -12,6 +14,11 @@ struct AIOutputView: View {
     // Minimum and maximum height for the AIOutputView
     private let minHeight: CGFloat = 100 // Minimum height for short responses
     private let maxHeight: CGFloat = 500 // Maximum height before scrolling
+
+    // Dynamic text color based on isDarkMode
+    private var textColor: Color {
+        isDarkMode ? .white : .black
+    }
 
     var body: some View {
         // Use a ZStack to layer the content
@@ -43,6 +50,8 @@ struct AIOutputView: View {
         }
         .frame(width: 700)
         .animation(.easeInOut(duration: 0.2), value: contentHeight)
+        .preferredColorScheme(isDarkMode ? .dark : .light)
+        .id("aioutput-\(isDarkMode)") // Force view refresh when theme changes
     }
 
     // Preference key to track content height
@@ -58,7 +67,7 @@ struct AIOutputView: View {
         switch aiViewModel.state {
         case .idle:
             Text("Ask a question or speak to get an AI response")
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(textColor.opacity(0.6))
                 .italic()
                 .font(.system(size: 16))
 
@@ -71,7 +80,7 @@ struct AIOutputView: View {
                 // Otherwise show the thinking message
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Thinking...")
-                        .foregroundColor(.white.opacity(0.7))
+                        .foregroundColor(textColor.opacity(0.7))
                         .italic()
                         .font(.system(size: 16))
                 }
@@ -86,7 +95,7 @@ struct AIOutputView: View {
                     .font(.headline)
                     .foregroundColor(.red)
                 Text(errorMessage)
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(textColor.opacity(0.8))
                     .font(.system(size: 16))
             }
         }

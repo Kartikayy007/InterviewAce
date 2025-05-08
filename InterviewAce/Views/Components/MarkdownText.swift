@@ -5,7 +5,12 @@ import AppKit
 struct MarkdownText: View {
     let text: String
     var fontSize: CGFloat = 16
-    var textColor: Color = .white
+    @AppStorage("isDarkMode") private var isDarkMode = true
+
+    // Dynamic text color based on isDarkMode
+    private var textColor: Color {
+        isDarkMode ? .white : .black
+    }
 
     // Return the original text without removing code blocks
     private var processedText: String {
@@ -18,6 +23,8 @@ struct MarkdownText: View {
             Text(attributedMarkdownText)
                 .textSelection(.enabled)
                 .lineSpacing(4)
+                .preferredColorScheme(isDarkMode ? .dark : .light)
+                .id("markdowntext-\(isDarkMode)") // Force view refresh when theme changes
         } else {
             // Fallback for older versions
             Text(processedText)
@@ -25,6 +32,8 @@ struct MarkdownText: View {
                 .foregroundColor(textColor)
                 .font(.system(size: fontSize))
                 .lineSpacing(4)
+                .preferredColorScheme(isDarkMode ? .dark : .light)
+                .id("markdowntext-\(isDarkMode)") // Force view refresh when theme changes
         }
     }
 
@@ -33,19 +42,25 @@ struct MarkdownText: View {
     private var attributedMarkdownText: AttributedString {
         do {
             // First parse the markdown into an AttributedString
-            let attributedString = try AttributedString(markdown: processedText, options: AttributedString.MarkdownParsingOptions(
+            var attributedString = try AttributedString(markdown: processedText, options: AttributedString.MarkdownParsingOptions(
                 allowsExtendedAttributes: true,
                 interpretedSyntax: .inlineOnlyPreservingWhitespace,
                 failurePolicy: .returnPartiallyParsedIfPossible
             ))
 
-            // Instead of using AttributeContainer with NSFont (which isn't Sendable),
-            // we'll apply styling using SwiftUI modifiers instead
+            // Apply foreground color based on the theme
+            attributedString.foregroundColor = textColor
+
             return attributedString
         } catch {
             print("Error parsing markdown: \(error)")
             // If parsing fails, return plain text
-            return AttributedString(processedText)
+            var plainText = AttributedString(processedText)
+
+            // Apply foreground color to plain text
+            plainText.foregroundColor = textColor
+
+            return plainText
         }
     }
 }

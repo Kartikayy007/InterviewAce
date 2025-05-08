@@ -27,6 +27,29 @@ class AIViewModel: ObservableObject {
 
     init() {
         setupGeminiObservers()
+        setupModelChangeObserver()
+    }
+
+    private func setupModelChangeObserver() {
+        // Listen for model change notifications
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("ModelChanged"),
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self else { return }
+
+            if let modelName = notification.userInfo?["modelName"] as? String {
+                // Set a temporary message to inform the user about the model change
+                let previousState = self.state
+                self.state = .success("Model changed to: \(modelName)")
+
+                // Restore previous state after a delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    self.state = previousState
+                }
+            }
+        }
     }
 
     private func setupGeminiObservers() {
@@ -100,5 +123,8 @@ class AIViewModel: ObservableObject {
         geminiService.cancelRequest()
     }
 
-
+    deinit {
+        // Remove notification observer when this object is deallocated
+        NotificationCenter.default.removeObserver(self)
+    }
 }

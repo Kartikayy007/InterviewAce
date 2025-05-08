@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 // Represents different AI service states
 enum AIServiceState {
@@ -71,8 +72,17 @@ class GeminiService: ObservableObject {
 
     private var apiKey: String = ""
 
-    // Updated to use Gemini 2.0 Flash model
-    private let baseURL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-001:generateContent"
+    // Model URLs
+    private let fastModelURL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-lite:generateContent"
+    private let smartModelURL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent"
+
+    @AppStorage("useSmartModel") private var useSmartModel: Bool = false
+
+    // Computed property to get the current model URL based on the setting
+    private var currentModelURL: String {
+        return useSmartModel ? smartModelURL : fastModelURL
+    }
+
     private var cancellables = Set<AnyCancellable>()
 
     init() {
@@ -167,11 +177,14 @@ class GeminiService: ObservableObject {
         }
 
         // Create the URL with API key
-        guard let url = URL(string: "\(baseURL)?key=\(apiKey)") else {
+        guard let url = URL(string: "\(currentModelURL)?key=\(apiKey)") else {
             print("GeminiService: Invalid URL")
             self.state = .error("Invalid URL")
             return
         }
+
+        // Log which model is being used
+        print("GeminiService: Using model: \(useSmartModel ? "Smart (Gemini 2.0 Flash)" : "Fast (Gemini 2.0 Flash-Lite)")")
 
         print("GeminiService: Sending request to URL: \(url.host ?? "unknown host")")
 
